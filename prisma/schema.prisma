@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// A piece of code the user worked on in the workbench.
+model Snippet {
+  id        String        @id @default(cuid())
+  userId    String? // null in local single-user mode; Clerk drops in later
+  title     String
+  language  String
+  code      String
+  mode      String        @default("standard") // standard | learning | interview | competitive
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  runs      AnalysisRun[]
+}
+
+// One AI analysis pass over a snippet at a point in time.
+model AnalysisRun {
+  id        String   @id @default(cuid())
+  snippetId String
+  snippet   Snippet  @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  mode      String   @default("standard")
+  language  String
+  overall   Int
+  bugCount  Int      @default(0)
+  scores    String // JSON: the 8 score dimensions
+  findings  String // JSON: full insight payload (complexity, bugs, security, tests, optimizations)
+  createdAt DateTime @default(now())
+}
+
+// AI-generated weekly quality report.
+model Report {
+  id        String   @id @default(cuid())
+  userId    String?
+  weekStart DateTime
+  summary   String
+  stats     String // JSON aggregates
+  createdAt DateTime @default(now())
+}
+
+// Key-value app settings (e.g. encrypted GitHub token, live-analysis toggle).
+model Setting {
+  key   String @id
+  value String
+}
