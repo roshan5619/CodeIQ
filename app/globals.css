@@ -103,6 +103,39 @@ body {
   mask-image: radial-gradient(70rem 40rem at 50% 0%, black 40%, transparent 100%);
 }
 
+/* ---------- Monaco editor decorations ---------- */
+
+.codeiq-line-warn {
+  background: rgba(251, 191, 36, 0.08);
+  border-left: 2px solid rgba(251, 191, 36, 0.6);
+}
+.codeiq-line-danger {
+  background: rgba(251, 113, 133, 0.09);
+  border-left: 2px solid rgba(251, 113, 133, 0.65);
+}
+.codeiq-line-focus {
+  background: rgba(53, 224, 195, 0.1);
+  border-left: 2px solid rgba(53, 224, 195, 0.7);
+}
+.codeiq-glyph-bug::after {
+  content: "●";
+  color: #fbbf24;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.codeiq-glyph-security::after {
+  content: "▲";
+  color: #fb7185;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
 /* thin scrollbars everywhere */
 * {
   scrollbar-width: thin;
