@@ -29,6 +29,8 @@ interface WorkbenchState {
   focusRange: LineRange | null;
   console: ConsoleEntry[];
   lastAnalyzedAt: number | null;
+  /** True when the server has no API key and the UI is showing sample data. */
+  demoMode: boolean;
 
   setCode: (code: string) => void;
   setLanguage: (language: Language) => void;
@@ -38,6 +40,7 @@ interface WorkbenchState {
   setError: (error: string | null) => void;
   setActiveTab: (tab: TabId) => void;
   setFocusRange: (range: LineRange | null) => void;
+  setDemoMode: (demo: boolean) => void;
   log: (level: ConsoleEntry["level"], text: string) => void;
   clearConsole: () => void;
 }
@@ -51,6 +54,7 @@ export const useWorkbench = create<WorkbenchState>((set) => ({
   error: null,
   activeTab: "overview",
   focusRange: null,
+  demoMode: false,
   console: [
     {
       ts: Date.now(),
@@ -80,6 +84,7 @@ export const useWorkbench = create<WorkbenchState>((set) => ({
   setError: (error) => set({ error }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setFocusRange: (focusRange) => set({ focusRange }),
+  setDemoMode: (demoMode) => set({ demoMode }),
   log: (level, text) =>
     set((s) => ({
       console: [...s.console.slice(-199), { ts: Date.now(), level, text }],

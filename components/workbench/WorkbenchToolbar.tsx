@@ -14,6 +14,19 @@ const MODES: Array<{ id: Mode; label: string }> = [
 function StatusPill() {
   const status = useWorkbench((s) => s.status);
   const lastAnalyzedAt = useWorkbench((s) => s.lastAnalyzedAt);
+  const demoMode = useWorkbench((s) => s.demoMode);
+
+  if (demoMode && status !== "analyzing") {
+    return (
+      <span
+        className="flex items-center gap-1.5 rounded-full bg-warn-soft px-3 py-1 text-[11px] font-medium text-warn"
+        title="Add ANTHROPIC_API_KEY to .env.local and restart to enable live analysis"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-warn" />
+        Demo data — no API key
+      </span>
+    );
+  }
 
   if (status === "analyzing") {
     return (
