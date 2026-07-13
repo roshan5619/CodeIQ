@@ -3,6 +3,8 @@
 import { useWorkbench } from "@/lib/store";
 import { LANGUAGES, type Language, type Mode } from "@/lib/types";
 import { ChevronDown, Zap } from "lucide-react";
+import RefactorButton from "./RefactorButton";
+import DocsButton from "./DocsButton";
 
 const MODES: Array<{ id: Mode; label: string }> = [
   { id: "standard", label: "Standard" },
@@ -101,8 +103,10 @@ export default function WorkbenchToolbar({ onAnalyze }: { onAnalyze: () => void 
         ))}
       </div>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-2">
         <StatusPill />
+        <RefactorButton />
+        <DocsButton />
         <button
           onClick={onAnalyze}
           className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-bg transition-transform hover:scale-[1.03]"

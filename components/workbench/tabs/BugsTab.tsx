@@ -1,13 +1,55 @@
 "use client";
 
+import { useState } from "react";
 import { useWorkbench } from "@/lib/store";
 import { ConfidenceBadge, SeverityBadge } from "@/components/ui/Badges";
-import { Bug, CheckCircle2, Wrench } from "lucide-react";
+import { postJson, ApiError } from "@/lib/streamFetch";
+import { Bug, CheckCircle2, Loader2, Wand2, Wrench } from "lucide-react";
+
+interface FixResponse {
+  fixedCode: string;
+  explanation: string;
+  falsePositive: boolean;
+}
 
 export default function BugsTab() {
-  const insight = useWorkbench((s) => s.insight);
-  const setFocusRange = useWorkbench((s) => s.setFocusRange);
+  const { code, language, insight, setFocusRange, openDiff, updateDiff, log } =
+    useWorkbench();
+  const [fixing, setFixing] = useState<number | null>(null);
   if (!insight) return null;
+
+  const fix = async (i: number) => {
+    const bug = insight.bugs[i];
+    setFixing(i);
+    log("info", `Generating fix for "${bug.title}"…`);
+    try {
+      const res = await postJson<FixResponse>("/api/fix", {
+        code,
+        language,
+        finding: bug,
+      });
+      if (res.falsePositive) {
+        log("warn", `Re-examined "${bug.title}": likely a false positive — ${res.explanation}`);
+        return;
+      }
+      openDiff({
+        title: `Fix — ${bug.title}`,
+        original: code,
+        modified: res.fixedCode,
+        explanation: res.explanation,
+        streaming: false,
+      });
+      updateDiff({});
+    } catch (err) {
+      if (err instanceof ApiError && err.code === "missing_api_key") {
+        log("warn", "One-click fixes need ANTHROPIC_API_KEY — add it to .env.local.");
+      } else {
+        log("error", err instanceof Error ? err.message : "Fix generation failed.");
+      }
+    } finally {
+      setFixing(null);
+    }
+  };
 
   if (insight.bugs.length === 0) {
     return (
@@ -47,10 +89,22 @@ export default function BugsTab() {
             </div>
           </div>
           <p className="mb-3 text-[13px] leading-relaxed text-mute">{bug.detail}</p>
-          <div className="flex items-start gap-2 rounded-xl bg-accent-soft p-3">
+          <div className="mb-3 flex items-start gap-2 rounded-xl bg-accent-soft p-3">
             <Wrench size={13} className="mt-0.5 shrink-0 text-accent" />
             <p className="text-xs leading-relaxed text-ink/90">{bug.suggestedFix}</p>
           </div>
+          <button
+            onClick={() => fix(i)}
+            disabled={fixing !== null}
+            className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-bg transition-transform hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {fixing === i ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <Wand2 size={12} />
+            )}
+            {fixing === i ? "Generating fix…" : "Fix with AI"}
+          </button>
         </div>
       ))}
     </div>

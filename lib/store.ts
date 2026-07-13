@@ -17,6 +17,21 @@ interface ConsoleEntry {
   text: string;
 }
 
+/** A pending code change under review in the diff modal. */
+export interface DiffReview {
+  title: string;
+  original: string;
+  modified: string;
+  explanation: string;
+  streaming: boolean;
+}
+
+export interface EdgeCaseResult {
+  label: string;
+  status: "pass" | "fail" | "predicted-pass" | "predicted-fail";
+  note: string;
+}
+
 interface WorkbenchState {
   code: string;
   language: Language;
@@ -31,6 +46,8 @@ interface WorkbenchState {
   lastAnalyzedAt: number | null;
   /** True when the server has no API key and the UI is showing sample data. */
   demoMode: boolean;
+  /** Open diff-review modal state (refactor / fix flows). */
+  diff: DiffReview | null;
 
   setCode: (code: string) => void;
   setLanguage: (language: Language) => void;
@@ -41,6 +58,10 @@ interface WorkbenchState {
   setActiveTab: (tab: TabId) => void;
   setFocusRange: (range: LineRange | null) => void;
   setDemoMode: (demo: boolean) => void;
+  openDiff: (diff: DiffReview) => void;
+  updateDiff: (patch: Partial<DiffReview>) => void;
+  closeDiff: () => void;
+  applyEdgeCaseResults: (results: EdgeCaseResult[]) => void;
   log: (level: ConsoleEntry["level"], text: string) => void;
   clearConsole: () => void;
 }
@@ -55,6 +76,7 @@ export const useWorkbench = create<WorkbenchState>((set) => ({
   activeTab: "overview",
   focusRange: null,
   demoMode: false,
+  diff: null,
   console: [
     {
       ts: Date.now(),
@@ -85,6 +107,24 @@ export const useWorkbench = create<WorkbenchState>((set) => ({
   setActiveTab: (activeTab) => set({ activeTab }),
   setFocusRange: (focusRange) => set({ focusRange }),
   setDemoMode: (demoMode) => set({ demoMode }),
+  openDiff: (diff) => set({ diff }),
+  updateDiff: (patch) =>
+    set((s) => (s.diff ? { diff: { ...s.diff, ...patch } } : {})),
+  closeDiff: () => set({ diff: null }),
+  applyEdgeCaseResults: (results) =>
+    set((s) => {
+      if (!s.insight) return {};
+      const byLabel = new Map(results.map((r) => [r.label, r]));
+      return {
+        insight: {
+          ...s.insight,
+          edgeCases: s.insight.edgeCases.map((ec) => {
+            const r = byLabel.get(ec.label);
+            return r ? { ...ec, status: r.status } : ec;
+          }),
+        },
+      };
+    }),
   log: (level, text) =>
     set((s) => ({
       console: [...s.console.slice(-199), { ts: Date.now(), level, text }],

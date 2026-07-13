@@ -5,37 +5,7 @@ import Editor, { type Monaco, type OnMount } from "@monaco-editor/react";
 import type { editor } from "monaco-editor";
 import { useWorkbench } from "@/lib/store";
 import { LANGUAGES } from "@/lib/types";
-
-function defineTheme(monaco: Monaco) {
-  monaco.editor.defineTheme("codeiq-dark", {
-    base: "vs-dark",
-    inherit: true,
-    rules: [
-      { token: "comment", foreground: "5f6b80", fontStyle: "italic" },
-      { token: "keyword", foreground: "a78bfa" },
-      { token: "string", foreground: "35e0c3" },
-      { token: "number", foreground: "fbbf24" },
-      { token: "type", foreground: "7dd3fc" },
-      { token: "function", foreground: "7dd3fc" },
-      { token: "identifier", foreground: "e7edf7" },
-    ],
-    colors: {
-      "editor.background": "#0c1018",
-      "editor.foreground": "#e7edf7",
-      "editor.lineHighlightBackground": "#12182666",
-      "editorLineNumber.foreground": "#3d4a5f",
-      "editorLineNumber.activeForeground": "#93a0b4",
-      "editorIndentGuide.background1": "#1a2234",
-      "editor.selectionBackground": "#35e0c333",
-      "editorCursor.foreground": "#35e0c3",
-      "editorWidget.background": "#121826",
-      "editorWidget.border": "#26314a",
-      "editorGutter.background": "#0c1018",
-      "scrollbarSlider.background": "#94a3b833",
-      "scrollbarSlider.hoverBackground": "#94a3b855",
-    },
-  });
-}
+import { defineCodeIQTheme } from "./theme";
 
 export default function CodeEditor() {
   const { code, language, insight, focusRange, setCode } = useWorkbench();
@@ -117,7 +87,7 @@ export default function CodeEditor() {
         language={monacoLanguage}
         value={code}
         theme="codeiq-dark"
-        beforeMount={defineTheme}
+        beforeMount={defineCodeIQTheme}
         onMount={handleMount}
         onChange={(value) => setCode(value ?? "")}
         loading={

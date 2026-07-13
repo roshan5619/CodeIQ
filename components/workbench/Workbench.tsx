@@ -5,6 +5,7 @@ import CodeEditor from "@/components/editor/CodeEditor";
 import InsightsPanel from "./InsightsPanel";
 import ConsolePanel from "./ConsolePanel";
 import WorkbenchToolbar from "./WorkbenchToolbar";
+import DiffModal from "./DiffModal";
 import { useAnalysis } from "./useAnalysis";
 
 function Handle({ orientation }: { orientation: "horizontal" | "vertical" }) {
@@ -30,6 +31,7 @@ export default function Workbench() {
 
   return (
     <div className="flex h-full flex-col">
+      <DiffModal />
       <WorkbenchToolbar onAnalyze={analyze} />
       <div className="min-h-0 flex-1">
         <Group orientation="horizontal" className="h-full">

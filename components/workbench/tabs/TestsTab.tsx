@@ -1,12 +1,15 @@
 "use client";
 
-import { useWorkbench } from "@/lib/store";
+import { useState } from "react";
+import { useWorkbench, type EdgeCaseResult } from "@/lib/store";
 import { scoreColor } from "@/components/ui/ScoreGauge";
+import { postJson, ApiError } from "@/lib/streamFetch";
 import type { EdgeCase } from "@/lib/types";
 import {
   CheckCircle2,
   CircleDashed,
   FlaskConical,
+  Loader2,
   Play,
   XCircle,
 } from "lucide-react";
@@ -25,11 +28,54 @@ function StatusIcon({ status }: { status: EdgeCase["status"] }) {
 }
 
 export default function TestsTab() {
-  const insight = useWorkbench((s) => s.insight);
-  const log = useWorkbench((s) => s.log);
+  const { code, language, insight, applyEdgeCaseResults, log } = useWorkbench();
+  const [running, setRunning] = useState(false);
   if (!insight) return null;
 
   const { hiddenTests, edgeCases } = insight;
+
+  const runAll = async () => {
+    if (running || edgeCases.length === 0) return;
+    setRunning(true);
+    log("info", `Running ${edgeCases.length} edge case(s)…`);
+    try {
+      const res = await postJson<{ mode: string; results: EdgeCaseResult[] }>(
+        "/api/edge-run",
+        {
+          code,
+          language,
+          cases: edgeCases.map(({ label, input, expected }) => ({
+            label,
+            input,
+            expected,
+          })),
+        },
+      );
+      applyEdgeCaseResults(res.results);
+      const passed = res.results.filter((r) => r.status.includes("pass")).length;
+      const verb = res.mode === "executed" ? "Executed" : "Predicted (AI)";
+      log(
+        passed === res.results.length ? "success" : "warn",
+        `${verb}: ${passed}/${res.results.length} passing.`,
+      );
+      for (const r of res.results) {
+        if (r.status.includes("fail") && r.note) {
+          log("warn", `  ✗ ${r.label}: ${r.note}`);
+        }
+      }
+    } catch (err) {
+      if (err instanceof ApiError && err.code === "missing_api_key") {
+        log(
+          "warn",
+          "Outcome prediction for this language needs ANTHROPIC_API_KEY (JS/TS run for real without it).",
+        );
+      } else {
+        log("error", err instanceof Error ? err.message : "Test run failed.");
+      }
+    } finally {
+      setRunning(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3 p-4">
@@ -77,13 +123,16 @@ export default function TestsTab() {
             Generated edge cases · {edgeCases.length}
           </h3>
           <button
-            onClick={() =>
-              log("info", "Test execution arrives with the deep-tools phase.")
-            }
-            className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-bg transition-transform hover:scale-[1.03]"
+            onClick={runAll}
+            disabled={running}
+            className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-bg transition-transform hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <Play size={12} />
-            Run all
+            {running ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <Play size={12} />
+            )}
+            {running ? "Running…" : "Run all"}
           </button>
         </div>
         <div className="flex flex-col gap-1.5">
