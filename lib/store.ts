@@ -36,6 +36,8 @@ interface WorkbenchState {
   code: string;
   language: Language;
   mode: Mode;
+  /** DB id of the snippet this editor session is saving runs against. */
+  snippetId: string | null;
   status: AnalysisStatus;
   insight: InsightPayload | null;
   error: string | null;
@@ -52,6 +54,9 @@ interface WorkbenchState {
   setCode: (code: string) => void;
   setLanguage: (language: Language) => void;
   setMode: (mode: Mode) => void;
+  setSnippetId: (id: string | null) => void;
+  /** Hydrate the editor from a saved snippet (dashboard "open" action). */
+  loadSnippet: (snippet: { id: string; code: string; language: Language; mode: Mode }) => void;
   setStatus: (status: AnalysisStatus) => void;
   setInsight: (insight: InsightPayload | null) => void;
   setError: (error: string | null) => void;
@@ -70,6 +75,7 @@ export const useWorkbench = create<WorkbenchState>((set) => ({
   code: sampleFor("python"),
   language: "python",
   mode: "standard",
+  snippetId: null,
   status: "idle",
   insight: null,
   error: null,
@@ -94,6 +100,19 @@ export const useWorkbench = create<WorkbenchState>((set) => ({
       insight: null,
       status: "idle",
       focusRange: null,
+      snippetId: null,
+    }),
+  setSnippetId: (snippetId) => set({ snippetId }),
+  loadSnippet: ({ id, code, language, mode }) =>
+    set({
+      snippetId: id,
+      code,
+      language,
+      mode,
+      insight: null,
+      status: "idle",
+      focusRange: null,
+      activeTab: mode !== "standard" ? "coach" : "overview",
     }),
   setMode: (mode) =>
     set((s) => ({

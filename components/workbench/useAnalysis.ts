@@ -28,10 +28,12 @@ export function useAnalysis() {
     code,
     language,
     mode,
+    snippetId,
     setStatus,
     setInsight,
     setError,
     setDemoMode,
+    setSnippetId,
     log,
   } = useWorkbench();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -73,6 +75,22 @@ export function useAnalysis() {
         "success",
         `Analysis complete in ${((performance.now() - started) / 1000).toFixed(1)}s — overall ${insight.overall}/100, ${insight.bugs.length} bug(s), ${insight.security.length} security finding(s).`,
       );
+
+      // Persist the run for the dashboard (fire and forget).
+      fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ snippetId, code, language, mode, insight }),
+      })
+        .then(async (r) => {
+          if (r.ok) {
+            const saved = (await r.json()) as { snippetId: string };
+            setSnippetId(saved.snippetId);
+          }
+        })
+        .catch(() => {
+          /* history is best-effort; never disturb the editing flow */
+        });
     } catch (err) {
       if (controller.signal.aborted) return;
 
@@ -98,7 +116,18 @@ export function useAnalysis() {
       setStatus("error");
       log("error", message);
     }
-  }, [code, language, mode, setStatus, setInsight, setError, setDemoMode, log]);
+  }, [
+    code,
+    language,
+    mode,
+    snippetId,
+    setStatus,
+    setInsight,
+    setError,
+    setDemoMode,
+    setSnippetId,
+    log,
+  ]);
 
   // Debounced auto-analysis on code changes.
   useEffect(() => {

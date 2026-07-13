@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import CodeEditor from "@/components/editor/CodeEditor";
 import InsightsPanel from "./InsightsPanel";
@@ -7,6 +8,15 @@ import ConsolePanel from "./ConsolePanel";
 import WorkbenchToolbar from "./WorkbenchToolbar";
 import DiffModal from "./DiffModal";
 import { useAnalysis } from "./useAnalysis";
+import { useWorkbench } from "@/lib/store";
+import type { Language, Mode } from "@/lib/types";
+
+interface InitialSnippet {
+  id: string;
+  code: string;
+  language: Language;
+  mode: Mode;
+}
 
 function Handle({ orientation }: { orientation: "horizontal" | "vertical" }) {
   // orientation refers to the parent group's axis: in a horizontal group the
@@ -26,8 +36,22 @@ function Handle({ orientation }: { orientation: "horizontal" | "vertical" }) {
   );
 }
 
-export default function Workbench() {
+export default function Workbench({
+  initialSnippet = null,
+}: {
+  initialSnippet?: InitialSnippet | null;
+}) {
   const { analyze } = useAnalysis();
+  const loadSnippet = useWorkbench((s) => s.loadSnippet);
+  const loadedRef = useRef(false);
+
+  // Hydrate from a saved snippet exactly once (dashboard "open" flow).
+  useEffect(() => {
+    if (initialSnippet && !loadedRef.current) {
+      loadedRef.current = true;
+      loadSnippet(initialSnippet);
+    }
+  }, [initialSnippet, loadSnippet]);
 
   return (
     <div className="flex h-full flex-col">
