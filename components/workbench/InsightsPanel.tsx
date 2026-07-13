@@ -1,22 +1,32 @@
 "use client";
 
 import { useWorkbench } from "@/lib/store";
-import type { TabId } from "@/lib/types";
+import type { Mode, TabId } from "@/lib/types";
 import OverviewTab from "./tabs/OverviewTab";
 import ComplexityTab from "./tabs/ComplexityTab";
 import BugsTab from "./tabs/BugsTab";
 import SecurityTab from "./tabs/SecurityTab";
 import TestsTab from "./tabs/TestsTab";
 import OptimizeTab from "./tabs/OptimizeTab";
+import CoachTab from "./tabs/CoachTab";
 import {
   Bug,
   FlaskConical,
   GaugeCircle,
+  GraduationCap,
   LayoutDashboard,
   Rocket,
   ShieldCheck,
   Sparkles,
+  Swords,
+  Timer,
 } from "lucide-react";
+
+const MODE_TAB: Record<Exclude<Mode, "standard">, { label: string; icon: typeof Bug }> = {
+  learning: { label: "Learn", icon: GraduationCap },
+  interview: { label: "Interview", icon: Timer },
+  competitive: { label: "Compete", icon: Swords },
+};
 
 const TABS: Array<{
   id: TabId;
@@ -45,10 +55,11 @@ const TAB_CONTENT: Record<TabId, React.ComponentType> = {
   security: SecurityTab,
   tests: TestsTab,
   optimize: OptimizeTab,
+  coach: CoachTab,
 };
 
 export default function InsightsPanel() {
-  const { insight, status, activeTab, setActiveTab } = useWorkbench();
+  const { insight, status, mode, activeTab, setActiveTab } = useWorkbench();
 
   const counts: Counts = {
     bugs: insight?.bugs.length ?? 0,
@@ -56,13 +67,26 @@ export default function InsightsPanel() {
     optimizations: insight?.optimizations.length ?? 0,
   };
 
+  const allTabs =
+    mode === "standard"
+      ? TABS
+      : [
+          {
+            id: "coach" as TabId,
+            label: MODE_TAB[mode].label,
+            icon: MODE_TAB[mode].icon,
+            count: undefined,
+          },
+          ...TABS,
+        ];
+
   const Content = TAB_CONTENT[activeTab];
 
   return (
     <div className="flex h-full flex-col bg-surface/40">
       {/* tab bar */}
       <div className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-stroke px-2 py-1.5">
-        {TABS.map(({ id, label, icon: Icon, count }) => {
+        {allTabs.map(({ id, label, icon: Icon, count }) => {
           const n = count ? count(counts) : null;
           const active = activeTab === id;
           return (
@@ -91,9 +115,9 @@ export default function InsightsPanel() {
         })}
       </div>
 
-      {/* body */}
+      {/* body — the coach tab works without an analysis result */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {insight ? (
+        {activeTab === "coach" || insight ? (
           <Content />
         ) : status === "analyzing" ? (
           <AnalyzingState />

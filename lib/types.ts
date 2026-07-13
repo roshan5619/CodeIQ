@@ -139,4 +139,5 @@ export type TabId =
   | "bugs"
   | "security"
   | "tests"
-  | "optimize";
+  | "optimize"
+  | "coach";

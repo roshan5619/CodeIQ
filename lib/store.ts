@@ -95,7 +95,16 @@ export const useWorkbench = create<WorkbenchState>((set) => ({
       status: "idle",
       focusRange: null,
     }),
-  setMode: (mode) => set({ mode }),
+  setMode: (mode) =>
+    set((s) => ({
+      mode,
+      activeTab:
+        mode !== "standard"
+          ? "coach"
+          : s.activeTab === "coach"
+            ? "overview"
+            : s.activeTab,
+    })),
   setStatus: (status) =>
     set(
       status === "ready"
