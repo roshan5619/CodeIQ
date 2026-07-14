@@ -1,5 +1,7 @@
 # CodeIQ
 
+[![CI](https://github.com/roshan5619/CodeIQ/actions/workflows/ci.yml/badge.svg)](https://github.com/roshan5619/CodeIQ/actions/workflows/ci.yml)
+
 **AI-powered code intelligence platform** — an AI senior engineer that reviews, coaches, and optimizes your code while you type.
 
 CodeIQ combines a VS Code-style editor with continuous AI analysis: as you write, it computes time/space complexity per function, scores your code across eight quality dimensions, flags risky lines with confidence ratings, scans for security vulnerabilities, predicts whether hidden test cases would pass, and coaches you toward the optimal algorithm.
@@ -14,9 +16,10 @@ CodeIQ combines a VS Code-style editor with continuous AI analysis: as you write
 - **Hidden Test Prediction & Edge Case Generator** — hundreds of generated edge cases, runnable against your code
 - **AI Refactor** — faster / cleaner / less memory / SOLID / production-ready, applied through a diff view
 - **Documentation Generator** — README, API docs, comments, architecture summaries, flowcharts
-- **Learning / Interview / Competitive modes** — explanations, hints, acceptance predictions
-- **Analytics Dashboard** — quality trends, bug density, developer growth, weekly reports
-- **GitHub Integration** — AI pull-request reviews with line-anchored comments
+- **Learning / Interview / Competitive modes** — teaching explanations with voice narration, step-by-step algorithm animation, progressive hint ladder, interview rating, acceptance prediction with TLE risk
+- **Analytics Dashboard** — quality trends, bug density, language breakdown, AI-written weekly reports
+- **GitHub Integration** — AI pull-request reviews with line-anchored comments, exportable as markdown
+- **Complexity heatmap & code replay** — tint the costly lines; scrub back through this session's code history
 
 **Languages:** Python, Java, JavaScript, TypeScript, C, C++, Go, Rust, Kotlin, Swift, PHP, Ruby, C#
 

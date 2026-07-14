@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useWorkbench } from "@/lib/store";
 import type { Mode, TabId } from "@/lib/types";
 import OverviewTab from "./tabs/OverviewTab";
@@ -117,13 +118,23 @@ export default function InsightsPanel() {
 
       {/* body — the coach tab works without an analysis result */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {activeTab === "coach" || insight ? (
-          <Content />
-        ) : status === "analyzing" ? (
-          <AnalyzingState />
-        ) : (
-          <EmptyState />
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+          >
+            {activeTab === "coach" || insight ? (
+              <Content />
+            ) : status === "analyzing" ? (
+              <AnalyzingState />
+            ) : (
+              <EmptyState />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

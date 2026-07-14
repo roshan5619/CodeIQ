@@ -2,9 +2,10 @@
 
 import { useWorkbench } from "@/lib/store";
 import { LANGUAGES, type Language, type Mode } from "@/lib/types";
-import { ChevronDown, Zap } from "lucide-react";
+import { ChevronDown, Flame, Zap } from "lucide-react";
 import RefactorButton from "./RefactorButton";
 import DocsButton from "./DocsButton";
+import ReplayButton from "./ReplayButton";
 
 const MODES: Array<{ id: Mode; label: string }> = [
   { id: "standard", label: "Standard" },
@@ -63,7 +64,8 @@ function StatusPill() {
 }
 
 export default function WorkbenchToolbar({ onAnalyze }: { onAnalyze: () => void }) {
-  const { language, mode, setLanguage, setMode } = useWorkbench();
+  const { language, mode, heatmap, setLanguage, setMode, toggleHeatmap } =
+    useWorkbench();
 
   return (
     <div className="flex shrink-0 items-center gap-3 border-b border-stroke bg-surface/60 px-4 py-2">
@@ -105,12 +107,24 @@ export default function WorkbenchToolbar({ onAnalyze }: { onAnalyze: () => void 
 
       <div className="ml-auto flex items-center gap-2">
         <StatusPill />
+        <button
+          onClick={toggleHeatmap}
+          className={`rounded-lg border p-1.5 transition-colors ${
+            heatmap
+              ? "border-warn/50 bg-warn-soft text-warn"
+              : "border-stroke bg-raised text-mute hover:text-ink"
+          }`}
+          title="Complexity heatmap — tint the costly lines"
+        >
+          <Flame size={14} />
+        </button>
+        <ReplayButton />
         <RefactorButton />
         <DocsButton />
         <button
           onClick={onAnalyze}
           className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-1.5 text-xs font-semibold text-bg transition-transform hover:scale-[1.03]"
-          title="Analyze now (skips the debounce)"
+          title="Analyze now — Ctrl+Enter"
         >
           <Zap size={13} />
           Analyze

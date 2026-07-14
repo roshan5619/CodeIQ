@@ -51,7 +51,16 @@ export default function SettingsClient() {
   };
 
   useEffect(() => {
-    void refresh();
+    let alive = true;
+    fetch("/api/settings", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((s: SettingsState | null) => {
+        if (alive && s) setState(s);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const saveToken = async () => {

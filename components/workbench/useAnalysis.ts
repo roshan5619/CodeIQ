@@ -34,6 +34,7 @@ export function useAnalysis() {
     setError,
     setDemoMode,
     setSnippetId,
+    addSnapshot,
     log,
   } = useWorkbench();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,6 +72,7 @@ export function useAnalysis() {
       setDemoMode(false);
       setInsight(insight);
       setStatus("ready");
+      addSnapshot(code, insight.overall);
       log(
         "success",
         `Analysis complete in ${((performance.now() - started) / 1000).toFixed(1)}s — overall ${insight.overall}/100, ${insight.bugs.length} bug(s), ${insight.security.length} security finding(s).`,
@@ -126,6 +128,7 @@ export function useAnalysis() {
     setError,
     setDemoMode,
     setSnippetId,
+    addSnapshot,
     log,
   ]);
 

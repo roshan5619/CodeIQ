@@ -8,7 +8,7 @@ import { LANGUAGES } from "@/lib/types";
 import { defineCodeIQTheme } from "./theme";
 
 export default function CodeEditor() {
-  const { code, language, insight, focusRange, setCode } = useWorkbench();
+  const { code, language, insight, focusRange, heatmap, setCode } = useWorkbench();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(
@@ -63,6 +63,24 @@ export default function CodeEditor() {
       });
     }
 
+    // Complexity heatmap: tint every hotspot the analyzer attributed cost to.
+    if (heatmap) {
+      for (const fn of insight?.functions ?? []) {
+        for (const h of fn.hotspots) {
+          decorations.push({
+            range: new monaco.Range(h.start, 1, h.end, 1),
+            options: {
+              isWholeLine: true,
+              className: "codeiq-line-heat",
+              glyphMarginHoverMessage: {
+                value: `**${fn.name}() hotspot** — ${h.reason}`,
+              },
+            },
+          });
+        }
+      }
+    }
+
     if (focusRange) {
       decorations.push({
         range: new monaco.Range(focusRange.start, 1, focusRange.end, 1),
@@ -71,7 +89,7 @@ export default function CodeEditor() {
     }
 
     collection.set(decorations);
-  }, [insight, focusRange]);
+  }, [insight, focusRange, heatmap]);
 
   // Scroll to a focused range when a finding card is clicked.
   useEffect(() => {

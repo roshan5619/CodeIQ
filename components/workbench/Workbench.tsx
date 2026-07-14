@@ -53,6 +53,18 @@ export default function Workbench({
     }
   }, [initialSnippet, loadSnippet]);
 
+  // Ctrl/Cmd+Enter — analyze immediately, skipping the debounce.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        analyze();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [analyze]);
+
   return (
     <div className="flex h-full flex-col">
       <DiffModal />

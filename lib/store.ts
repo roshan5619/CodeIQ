@@ -50,6 +50,10 @@ interface WorkbenchState {
   demoMode: boolean;
   /** Open diff-review modal state (refactor / fix flows). */
   diff: DiffReview | null;
+  /** Complexity heatmap: tint every hotspot line in the editor. */
+  heatmap: boolean;
+  /** Code snapshots captured at each successful analysis (session replay). */
+  snapshots: Array<{ ts: number; code: string; overall: number }>;
 
   setCode: (code: string) => void;
   setLanguage: (language: Language) => void;
@@ -66,6 +70,8 @@ interface WorkbenchState {
   openDiff: (diff: DiffReview) => void;
   updateDiff: (patch: Partial<DiffReview>) => void;
   closeDiff: () => void;
+  toggleHeatmap: () => void;
+  addSnapshot: (code: string, overall: number) => void;
   applyEdgeCaseResults: (results: EdgeCaseResult[]) => void;
   log: (level: ConsoleEntry["level"], text: string) => void;
   clearConsole: () => void;
@@ -83,6 +89,8 @@ export const useWorkbench = create<WorkbenchState>((set) => ({
   focusRange: null,
   demoMode: false,
   diff: null,
+  heatmap: false,
+  snapshots: [],
   console: [
     {
       ts: Date.now(),
@@ -139,6 +147,11 @@ export const useWorkbench = create<WorkbenchState>((set) => ({
   updateDiff: (patch) =>
     set((s) => (s.diff ? { diff: { ...s.diff, ...patch } } : {})),
   closeDiff: () => set({ diff: null }),
+  toggleHeatmap: () => set((s) => ({ heatmap: !s.heatmap })),
+  addSnapshot: (code, overall) =>
+    set((s) => ({
+      snapshots: [...s.snapshots.slice(-49), { ts: Date.now(), code, overall }],
+    })),
   applyEdgeCaseResults: (results) =>
     set((s) => {
       if (!s.insight) return {};
